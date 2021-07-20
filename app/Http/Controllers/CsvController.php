@@ -21,6 +21,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class CsvController extends Controller
 {
+    private const HEADER = 'header';
+    private const DATA = 'data';
+
     /**
      * Display a list of stored CSV files.
      *
@@ -41,8 +44,8 @@ class CsvController extends Controller
     public function store(StoreRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        $header = unserialize($request->get('header'));
-        $data = unserialize($request->get('data'));
+        $header = unserialize($request->get(self::HEADER));
+        $data = unserialize($request->get(self::DATA));
 
         DB::beginTransaction();
         try {
@@ -85,7 +88,7 @@ class CsvController extends Controller
             DB::rollBack();
             var_dump($data);
             return redirect()->back()
-                ->withInput(['header' => $header, 'data' => $data])
+                ->withInput([self::HEADER => $header, self::DATA => $data])
                 ->withErrors(['save-fail' => 'Save failed.']);
         }
     }
@@ -125,8 +128,8 @@ class CsvController extends Controller
 
         return view('table', [
             'title' => $csv->title,
-            'header' => $header,
-            'data' => $data
+            self::HEADER => $header,
+            self::DATA => $data
         ]);
     }
 
@@ -166,7 +169,12 @@ class CsvController extends Controller
         }
     }
 
-    public function result(Request $request): Application|Factory|View|RedirectResponse
+    /**
+     * Display parsed CSV.
+     *
+     * @return Application|Factory|View|RedirectResponse
+     */
+    public function result(): Application|Factory|View|RedirectResponse
     {
         $input = session()->getOldInput();
 
@@ -174,12 +182,12 @@ class CsvController extends Controller
             return redirect()->route('upload');
         }
 
-        if (is_string($input['header'])) {
-            $input['header'] = unserialize($input['header']);
+        if (is_string($input[self::HEADER])) {
+            $input[self::HEADER] = unserialize($input[self::HEADER]);
         }
 
-        if (is_string($input['data'])) {
-            $input['data'] = unserialize($input['data']);
+        if (is_string($input[self::DATA])) {
+            $input[self::DATA] = unserialize($input[self::DATA]);
         }
 
         return view('table', $input);
@@ -194,13 +202,14 @@ class CsvController extends Controller
      */
     public function concat(Request $request): RedirectResponse
     {
-        $header = unserialize($request->get('header'));
-        $data = unserialize($request->get('data'));
+        $header = unserialize($request->get(self::HEADER));
+        $data = unserialize($request->get(self::DATA));
 
-        $newName = $header[0]['name'] . ' ' . $header[2]['name'];
-        $newType = $header[0]['type'] === $header[2]['type'] ? $header[0]['type'] : 'mixed';
+        $newName = $header[0][CSVService::COL_NAME] . ' ' . $header[2][CSVService::COL_NAME];
+        $newType = $header[0][CSVService::COL_TYPE] === $header[2][CSVService::COL_TYPE]
+            ? $header[0][CSVService::COL_TYPE] : 'mixed';
 
-        $header[] = ['name' => $newName, 'type' => $newType];
+        $header[] = [CSVService::COL_NAME => $newName, CSVService::COL_TYPE => $newType];
 
         foreach ($data as $idx => $line) {
             $concat = $line[0] . ' ' . $line[2];
@@ -216,7 +225,7 @@ class CsvController extends Controller
 
         return redirect()
             ->route('result')
-            ->withInput(['header' => $header, 'data' => $data]);
+            ->withInput([self::HEADER => $header, self::DATA => $data]);
     }
 
 }
