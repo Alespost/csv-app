@@ -1,8 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
+    @if( session('success') )
+        <div class="alert alert-success" role="alert">
+            {{ session('success') }}
+        </div>
+    @endif
 
-    @if(isset($title))
+
+    @if( isset($title) )
         <h1 class="pl-0">{{ $title }}</h1>
     @elseif( url()->current() === route('result') )
         <div class="row mb-3">

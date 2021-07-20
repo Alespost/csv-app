@@ -83,7 +83,11 @@ class CsvController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('show', $csv->id);
+
+            return redirect()
+                ->route('show', $csv->id)
+                ->with('success', 'Data has been saved successfully.');
+
         } catch (Exception) {
             DB::rollBack();
             var_dump($data);
