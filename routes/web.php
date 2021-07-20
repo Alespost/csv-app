@@ -14,26 +14,33 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', [CsvController::class, 'index'])
-    ->name('index');
+Route::get('/', function () {
+    return redirect()->route('index');
+});
 
-Route::get('/{id}', [CsvController::class, 'show'])
-    ->where('id', '\d+')
-    ->name('show');
+Route::prefix('csv')->group(function () {
+
+    Route::get('/', [CsvController::class, 'index'])
+        ->name('index');
+
+    Route::get('/{id}', [CsvController::class, 'show'])
+        ->where('id', '\d+')
+        ->name('show');
 
 
-Route::get('/upload', [CsvController::class, 'upload'])
-    ->name('upload');
+    Route::get('/upload', [CsvController::class, 'upload'])
+        ->name('upload');
 
-Route::post('/upload', [CsvController::class, 'parse'])
-    ->name('csv-parse');
+    Route::post('/upload', [CsvController::class, 'parse'])
+        ->name('csv-parse');
 
-Route::get('/result', [CsvController::class, 'result'])
-    ->name('result');
+    Route::get('/result', [CsvController::class, 'result'])
+        ->name('result');
 
-Route::post('/concat', [CsvController::class, 'concat'])
-    ->name('concat');
+    Route::post('/concat', [CsvController::class, 'concat'])
+        ->name('concat');
 
-Route::post('/store', [CsvController::class, 'store'])
-    ->name('store');
+    Route::post('/store', [CsvController::class, 'store'])
+        ->name('store');
 
+});
