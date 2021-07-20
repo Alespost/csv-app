@@ -28,6 +28,8 @@ Route::get('/upload', [CsvController::class, 'upload'])
 Route::post('/upload', [CsvController::class, 'parse'])
     ->name('csv-parse');
 
+Route::get('/result', [CsvController::class, 'result'])
+    ->name('result');
 
 Route::post('/concat', [CsvController::class, 'concat'])
     ->name('concat');

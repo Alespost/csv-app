@@ -83,8 +83,9 @@ class CsvController extends Controller
             return redirect()->route('show', $csv->id);
         } catch (Exception) {
             DB::rollBack();
+            var_dump($data);
             return redirect()->back()
-                ->withInput()
+                ->withInput(['header' => $header, 'data' => $data])
                 ->withErrors(['save-fail' => 'Save failed.']);
         }
     }
@@ -136,7 +137,7 @@ class CsvController extends Controller
      */
     public function upload(): Factory|View|Application
     {
-        return view('form');
+        return view('upload_form');
     }
 
     /**
@@ -154,12 +155,10 @@ class CsvController extends Controller
         try {
             $result = $CSVService->parse($fileContent, $validated['separator']);
 
-            return view('table',
-                [
-                    'header' => $result['header'],
-                    'data' => $result['data']
-                ]
-            );
+            return redirect()
+                ->route('result')
+                ->withInput($result);
+
         } catch (InvalidFormatException $e) {
             return redirect()->back()
                 ->withInput()
@@ -167,14 +166,33 @@ class CsvController extends Controller
         }
     }
 
+    public function result(Request $request): Application|Factory|View|RedirectResponse
+    {
+        $input = session()->getOldInput();
+
+        if (!$input) {
+            return redirect()->route('upload');
+        }
+
+        if (is_string($input['header'])) {
+            $input['header'] = unserialize($input['header']);
+        }
+
+        if (is_string($input['data'])) {
+            $input['data'] = unserialize($input['data']);
+        }
+
+        return view('table', $input);
+    }
+
     /**
      * Concat first third columns into new column.
      *
      * @param Request $request
-     * @return Factory|View|Application
+     * @return RedirectResponse
      * @throws Exception
      */
-    public function concat(Request $request): Factory|View|Application
+    public function concat(Request $request): RedirectResponse
     {
         $header = unserialize($request->get('header'));
         $data = unserialize($request->get('data'));
@@ -196,7 +214,9 @@ class CsvController extends Controller
             $data[$idx] = $line;
         }
 
-        return view('table', ['header' => $header, 'data' => $data]);
+        return redirect()
+            ->route('result')
+            ->withInput(['header' => $header, 'data' => $data]);
     }
 
 }

@@ -4,14 +4,7 @@
 
     @if(isset($title))
         <h1 class="pl-0">{{ $title }}</h1>
-    @elseif(url()->current() === route('upload') || url()->current() === route('concat'))
-
-        @error('save-fail')
-        <div class="alert alert-danger" role="alert">
-            {{ $message }}
-        </div>
-        @enderror
-
+    @elseif( url()->current() === route('result') )
         <div class="row mb-3">
 
             {{-- Concat form --}}
@@ -30,12 +23,19 @@
                     @csrf
                     <input type="hidden" value="{{ serialize($header) }}" name="header">
                     <input type="hidden" value="{{ serialize($data) }}" name="data">
-
                     <div class="input-group">
-                        <input type="text" name="title" class="form-control" placeholder="Title" aria-label="Title" required>
+                        <input type="text" id="title" name="title" class="form-control" placeholder="Title" aria-label="Title">
                         <div class="input-group-append">
                             <button class="btn btn-success" type="submit">Save</button>
                         </div>
+                        @error('title')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                        <script>
+                            document.getElementById('title').classList.add('is-invalid');
+                        </script>
+                        @enderror
                     </div>
                 </form>
             </div>
