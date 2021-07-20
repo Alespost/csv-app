@@ -41,7 +41,7 @@ class TypeService
     public function isInt($value): bool
     {
         $trimmed = trim($value);
-        return !empty($trimmed) && ctype_digit($trimmed);
+        return $trimmed !== '' && ctype_digit($trimmed);
     }
 
     public function isFloat($value): bool
