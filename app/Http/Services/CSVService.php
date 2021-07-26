@@ -90,6 +90,37 @@ class CSVService
 
     }
 
+    /**
+     * Concat first and third column.
+     *
+     * @param array $header
+     * @param array $data
+     * @return array
+     */
+    #[ArrayShape(['header' => "array", 'data' => "array"])]
+    public function concat(array $header, array $data): array
+    {
+        $newName = $header[0][CSVService::COL_NAME] . ' ' . $header[2][CSVService::COL_NAME];
+        $newType = $header[0][CSVService::COL_TYPE] === $header[2][CSVService::COL_TYPE]
+            ? $header[0][CSVService::COL_TYPE] : 'mixed';
+
+        $header[] = [CSVService::COL_NAME => $newName, CSVService::COL_TYPE => $newType];
+
+        foreach ($data as $idx => $line) {
+            $concat = $line[0] . ' ' . $line[2];
+
+            if (ctype_space($concat) || $concat === '') {
+                $line[] = '[EMPTY]';
+            } else {
+                $line[] = $concat;
+            }
+
+            $data[$idx] = $line;
+        }
+
+        return ['header' => $header, 'data' => $data];
+    }
+
     #[ArrayShape([self::COL_NAME => "", self::COL_TYPE => "string"])]
     private function mapHeader($name): array
     {

@@ -201,35 +201,18 @@ class CsvController extends Controller
      * Concat first third columns into new column.
      *
      * @param Request $request
+     * @param CSVService $CSVService
      * @return RedirectResponse
-     * @throws Exception
      */
-    public function concat(Request $request): RedirectResponse
+    public function concat(Request $request, CSVService $CSVService): RedirectResponse
     {
         $header = unserialize($request->get(self::HEADER));
         $data = unserialize($request->get(self::DATA));
 
-        $newName = $header[0][CSVService::COL_NAME] . ' ' . $header[2][CSVService::COL_NAME];
-        $newType = $header[0][CSVService::COL_TYPE] === $header[2][CSVService::COL_TYPE]
-            ? $header[0][CSVService::COL_TYPE] : 'mixed';
-
-        $header[] = [CSVService::COL_NAME => $newName, CSVService::COL_TYPE => $newType];
-
-        foreach ($data as $idx => $line) {
-            $concat = $line[0] . ' ' . $line[2];
-
-            if (ctype_space($concat) || $concat === '') {
-                $line[] = '[EMPTY]';
-            } else {
-                $line[] = $concat;
-            }
-
-            $data[$idx] = $line;
-        }
+        $result = $CSVService->concat($header, $data);
 
         return redirect()
             ->route('result')
-            ->withInput([self::HEADER => $header, self::DATA => $data]);
+            ->withInput($result);
     }
-
 }
